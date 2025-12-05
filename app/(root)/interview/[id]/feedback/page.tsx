@@ -22,6 +22,21 @@ const Feedback = async ({ params }: RouteParams) => {
     userId: user?.id!,
   });
 
+  // Normalize categoryScores to array to handle legacy data
+  let categoryScoresArray: any[] = [];
+  if (feedback?.categoryScores) {
+    if (Array.isArray(feedback.categoryScores)) {
+      categoryScoresArray = feedback.categoryScores;
+    } else if (typeof feedback.categoryScores === 'object') {
+      // Handle legacy object structure
+      categoryScoresArray = Object.entries(feedback.categoryScores).map(([name, score]) => ({
+        name,
+        score,
+        comment: "" // Legacy data might miss comments
+      }));
+    }
+  }
+
   return (
     <section className="section-feedback">
       <div className="flex flex-row justify-center">
@@ -64,7 +79,7 @@ const Feedback = async ({ params }: RouteParams) => {
       {/* Interview Breakdown */}
       <div className="flex flex-col gap-4">
         <h2>Breakdown of the Interview:</h2>
-        {feedback?.categoryScores?.map((category, index) => (
+        {categoryScoresArray.map((category, index) => (
           <div key={index}>
             <p className="font-bold">
               {index + 1}. {category.name} ({category.score}/100)
